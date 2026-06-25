@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administrador de Corpus y Vocabulario</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Header Section -->
+        <header class="main-header">
+            <div class="header-logo">
+                <div class="header-title-wrapper">
+                    <h1>Administración de Corpus y Vocabulario</h1>
+                    <p class="subtitle">WORD2VECTS</p>
+                </div>
+            </div>
+            <div class="header-stats">
+                <div class="stat-badge" id="vocab-stat-badge">
+                    <span class="stat-label">Vocabulario:</span>
+                    <span class="stat-value" id="vocab-count-value"></span>
+                </div>
+                <div class="stat-badge" id="corpus-stat-badge">
+                    <span class="stat-label">Corpus:</span>
+                    <span class="stat-value" id="corpus-count-value"></span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Dashboard Layout -->
+        <main class="dashboard-grid">
+
+            <!-- Left Panel: Corpus Management -->
+            <section class="dashboard-card corpus-card">
+                <div class="card-header">
+                    <h2>Frases en el Corpus</h2>
+                </div>
+
+                <!-- Form to Add/Edit phrase -->
+                <div class="phrase-form-container">
+                    <form id="phrase-form" class="phrase-form" onsubmit="event.preventDefault();">
+                        <input type="hidden" id="phrase-index-input">
+                        <div class="input-group">
+                            <input type="text" id="phrase-input"
+                                placeholder="Escriba una frase para agregar al corpus..." required autocomplete="off">
+                            <button type="submit" id="btn-save-phrase" class="btn btn-success">
+                                <span id="save-btn-text">Agregar</span>
+                            </button>
+                            <button type="button" id="btn-cancel-edit" class="btn btn-secondary hidden">
+                                Cancelar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="table-container">
+                    <table class="table-corpus">
+                        <thead>
+                            <tr>
+                                <th style="width: 10%;">Índice</th>
+                                <th style="width: 70%;">Frase</th>
+                                <th style="width: 20%; text-align: right;">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="corpus-table-body">
+
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Right Panel: Word analysis (vector and similar words) -->
+            <div class="right-panel-column">
+
+                <!-- Word Finder Card -->
+                <section class="dashboard-card finder-card">
+                    <div class="card-header">
+                        <h2>Consultar Palabra</h2>
+                    </div>
+
+                    <div class="finder-form">
+                        <div class="input-group">
+                            <input type="text" id="word-search-input" placeholder="Escriba una palabra (ej. zorro)..."
+                                required autocomplete="off">
+                        </div>
+                        <div class="finder-buttons">
+                            <button id="btn-get-vector" class="btn btn-secondary flex-grow">
+                                Obtener Vector
+                            </button>
+                            <button id="btn-get-similar" class="btn btn-primary flex-grow">
+                                Similitud
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Vocabulary Card -->
+                <section class="dashboard-card vocab-card">
+                    <div class="card-header">
+                        <h2>Vocabulario del Modelo</h2>
+                        <span id="vocab-visible-count" class="term-badge">0 de 0</span>
+                    </div>
+                    <div class="vocab-filter-container" style="margin-bottom: 12px;">
+                        <div class="input-group">
+                            <input type="text" id="vocab-search-input" placeholder="Filtrar palabras..."
+                                autocomplete="off">
+                        </div>
+                    </div>
+                    <div id="vocab-words-container" class="vocab-words-container">
+                    </div>
+                </section>
+
+                <!-- Query Results Card -->
+                <section class="dashboard-card results-card">
+                    <div class="card-header">
+                        <h2>Resultados de Consulta</h2>
+                        <span id="search-term-display" class="term-badge hidden"></span>
+                    </div>
+
+                    <!-- Placeholder for no results -->
+                    <div id="results-placeholder" class="results-placeholder">
+                        <p>Busque una palabra o haga clic en el vocabulario para ver los vectores y términos similares.
+                        </p>
+                    </div>
+
+                    <!-- Vector display (hidden by default) -->
+                    <div id="vector-result-container" class="vector-result-container hidden">
+                        <div class="result-subheader">
+                            <h3>Vector de Palabra (100 dimensiones)</h3>
+                            <button id="btn-copy-vector" class="btn btn-secondary btn-sm"
+                                title="Copiar Vector">Copiar</button>
+                        </div>
+                        <p class="vector-description">Representación numérica del término en el espacio vectorial del
+                            modelo:</p>
+                        <div class="vector-grid-wrapper">
+                            <div id="vector-container" class="vector-grid">
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Similar words list (hidden by default) -->
+                    <div id="similar-result-container" class="similar-result-container hidden"
+                        style="margin-top: 20px;">
+                        <div class="result-subheader">
+                            <h3>Términos más Similares</h3>
+                        </div>
+                        <p class="vector-description">Palabras con mayor cercanía del coseno de similitud:</p>
+                        <div id="similar-words-container" class="similar-list">
+                            <!-- Similar words will be populated here -->
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,531 @@
+/* Minimalist Premium Theme */
+:root {
+    --bg-color: #fafafa;
+    --card-bg: #ffffff;
+    --border-color: #e5e7eb;
+    --border-color-hover: #d1d5db;
+    --text-primary: #111827;
+    --text-secondary: #4b5563;
+    --text-muted: #9ca3af;
+    
+    /* Absolute Monochromatic minimalism */
+    --primary: #111827;
+    --primary-hover: #030712;
+    --primary-light: #f3f4f6;
+    --success: #059669;
+    --success-light: #ecfdf5;
+    --danger: #dc2626;
+    --danger-light: #fef2f2;
+    --gray-bg: #f9fafb;
+    
+    --border-radius: 6px;
+    --transition: all 0.15s ease;
+}
+
+/* Global Reset */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: system-ui, -apple-system, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-primary);
+    line-height: 1.6;
+    padding: 30px 20px;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* Layout Container */
+.app-container {
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+/* Minimalist Header */
+.main-header {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 24px 30px;
+    margin-bottom: 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.header-logo {
+    display: flex;
+    align-items: center;
+}
+
+.header-title-wrapper h1 {
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--text-primary);
+}
+
+.header-title-wrapper .subtitle {
+    font-size: 12px;
+    color: var(--text-secondary);
+    font-weight: 400;
+}
+
+.header-stats {
+    display: flex;
+    gap: 12px;
+}
+
+.stat-badge {
+    background-color: var(--gray-bg);
+    border: 1px solid var(--border-color);
+    padding: 6px 14px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.stat-value {
+    color: var(--primary);
+    font-weight: 600;
+}
+
+/* Responsive Grid */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 1.15fr 0.85fr;
+    gap: 24px;
+    align-items: start;
+}
+
+@media (max-width: 900px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Minimalist Card Design */
+.dashboard-card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 24px;
+    margin-bottom: 24px;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.card-header h2 {
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-secondary);
+}
+
+/* Minimal Form Controls */
+.input-group {
+    display: flex;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    background-color: var(--gray-bg);
+    align-items: center;
+    width: 100%;
+    transition: var(--transition);
+}
+
+.input-group:focus-within {
+    border-color: var(--text-primary);
+    background-color: #ffffff;
+}
+
+.input-group input {
+    border: none;
+    background: transparent;
+    padding: 10px 14px;
+    font-size: 14px;
+    color: var(--text-primary);
+    outline: none;
+    flex-grow: 1;
+    width: 100%;
+}
+
+.input-group input::placeholder {
+    color: var(--text-muted);
+}
+
+/* Buttons */
+.btn {
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 8px 16px;
+    border: 1px solid transparent;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: var(--transition);
+    background-color: var(--primary);
+    color: #ffffff;
+}
+
+.btn:hover {
+    background-color: var(--primary-hover);
+}
+
+.btn-primary {
+    background-color: var(--primary);
+    color: #ffffff;
+}
+
+.btn-success {
+    background-color: var(--primary);
+    color: #ffffff;
+}
+
+.btn-success:hover {
+    background-color: var(--primary-hover);
+}
+
+.btn-secondary {
+    background-color: #ffffff;
+    border-color: var(--border-color);
+    color: var(--text-secondary);
+}
+
+.btn-secondary:hover {
+    background-color: var(--primary-light);
+    color: var(--text-primary);
+    border-color: var(--border-color-hover);
+}
+
+.btn-sm {
+    padding: 4px 10px;
+    font-size: 12px;
+}
+
+/* Text Buttons (Corpus edit/delete actions) */
+.btn-text {
+    background: transparent;
+    border: none;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: var(--transition);
+}
+
+.btn-text:hover {
+    color: var(--text-primary);
+    background-color: var(--primary-light);
+}
+
+.btn-edit:hover {
+    color: var(--success);
+    background-color: var(--success-light);
+}
+
+.btn-delete:hover {
+    color: var(--danger);
+    background-color: var(--danger-light);
+}
+
+.flex-grow {
+    flex-grow: 1;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* Minimalist Table */
+.table-container {
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    background-color: #ffffff;
+}
+
+.table-corpus {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    text-align: left;
+}
+
+.table-corpus th {
+    background-color: var(--gray-bg);
+    color: var(--text-secondary);
+    font-weight: 500;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border-color);
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+.table-corpus td {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-primary);
+    vertical-align: middle;
+}
+
+.table-corpus tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.table-corpus tbody tr {
+    transition: var(--transition);
+}
+
+.table-corpus tbody tr:hover {
+    background-color: var(--gray-bg);
+}
+
+.phrase-index-badge {
+    background-color: var(--primary-light);
+    color: var(--primary);
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.actions-cell {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+/* Right Column Panel */
+.right-panel-column {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.finder-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.finder-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+/* Vocabulary Card */
+.vocab-filter-container {
+    margin-bottom: 12px;
+}
+
+.vocab-words-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    max-height: 200px;
+    overflow-y: auto;
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    background-color: var(--gray-bg);
+    align-content: flex-start;
+}
+
+.vocab-word-pill {
+    background-color: #ffffff;
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 400;
+    cursor: pointer;
+    transition: var(--transition);
+    user-select: none;
+}
+
+.vocab-word-pill:hover {
+    background-color: var(--primary);
+    color: #ffffff;
+    border-color: var(--primary);
+}
+
+/* Query Results Section */
+.term-badge {
+    background-color: var(--primary-light);
+    color: var(--primary);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.results-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    text-align: center;
+    color: var(--text-secondary);
+    border: 1px dashed var(--border-color);
+    border-radius: var(--border-radius);
+    background-color: var(--gray-bg);
+}
+
+.results-placeholder p {
+    font-size: 13px;
+}
+
+.result-subheader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.result-subheader h3 {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-secondary);
+}
+
+.vector-description {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+}
+
+/* Vector representation cells */
+.vector-grid-wrapper {
+    background-color: var(--gray-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 10px;
+    max-height: 160px;
+    overflow-y: auto;
+}
+
+.vector-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 4px;
+}
+
+.vector-cell {
+    background-color: #ffffff;
+    border: 1px solid var(--border-color);
+    border-radius: 3px;
+    padding: 4px 2px;
+    text-align: center;
+    font-family: monospace;
+    font-size: 11px;
+    color: var(--text-primary);
+}
+
+/* Similarity list */
+.similar-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.similar-item {
+    background-color: #ffffff;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 10px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.similar-item-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+}
+
+.similar-word-name {
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.similar-score {
+    color: var(--text-secondary);
+    font-weight: 600;
+    font-size: 12px;
+}
+
+/* Progress bar */
+.progress-bar-container {
+    width: 100%;
+    height: 4px;
+    background-color: var(--gray-bg);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background-color: var(--primary);
+    width: 0%;
+}
+
+/* Custom Webkit Scrollbars for Minimalist Look */
+::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #e5e7eb;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #d1d5db;
+}
+
+/* Copy button feedback */
+.btn-secondary.copied {
+    color: var(--success);
+    border-color: var(--success);
+    background-color: var(--success-light);
+}
+
+/* Subtle loading layout indicators */
+.loading-indicator {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-left: 8px;
+}
