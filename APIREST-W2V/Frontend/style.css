@@ -101,7 +101,7 @@ body {
     display: grid;
     grid-template-columns: 1.15fr 0.85fr;
     gap: 24px;
-    align-items: start;
+    align-items: stretch;
 }
 
 @media (max-width: 900px) {
@@ -549,8 +549,12 @@ body {
 }
 
 .embeddings-table-container {
-    max-height: 350px;
+    height: 320px;
     overflow-y: auto;
+}
+
+.corpus-card .table-container {
+    height: 320px;
 }
 
 .table-embeddings {
