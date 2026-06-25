@@ -52,7 +52,7 @@ Implementación de TF-IDF.
 
 ### 4. Clasificadores
 
-Clasificadores basados en Word2Vec, BoW y TF-IDF.
+Clasificadores basados en BoW y TF-IDF.
 
 - **Clasificador BoW:** `clasificadroBoW.py`
 - **Clasificador TF-IDF:** `clasificadorTFIDF.py`
