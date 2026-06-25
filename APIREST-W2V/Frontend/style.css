@@ -1,12 +1,11 @@
-/* Minimalist Premium Theme */
 :root {
-    --bg-color: #fafafa;
+    --bg-color: #f3f4f6;
     --card-bg: #ffffff;
-    --border-color: #e5e7eb;
-    --border-color-hover: #d1d5db;
+    --border-color: #d1d5db;
+    --border-color-hover: #9ca3af;
     --text-primary: #111827;
-    --text-secondary: #4b5563;
-    --text-muted: #9ca3af;
+    --text-secondary: #374151;
+    --text-muted: #6b7280;
     
     /* Absolute Monochromatic minimalism */
     --primary: #111827;
@@ -18,7 +17,7 @@
     --danger-light: #fef2f2;
     --gray-bg: #f9fafb;
     
-    --border-radius: 6px;
+    --border-radius: 0px;
     --transition: all 0.15s ease;
 }
 
@@ -83,7 +82,7 @@ body {
     background-color: var(--gray-bg);
     border: 1px solid var(--border-color);
     padding: 6px 14px;
-    border-radius: 4px;
+    border-radius: 0px;
     font-size: 12px;
     font-weight: 500;
     color: var(--text-secondary);
@@ -230,7 +229,7 @@ body {
     color: var(--text-secondary);
     cursor: pointer;
     padding: 4px 8px;
-    border-radius: 4px;
+    border-radius: 0px;
     transition: var(--transition);
 }
 
@@ -307,7 +306,7 @@ body {
     background-color: var(--primary-light);
     color: var(--primary);
     padding: 2px 6px;
-    border-radius: 3px;
+    border-radius: 0px;
     font-size: 11px;
     font-weight: 600;
 }
@@ -359,7 +358,7 @@ body {
     border: 1px solid var(--border-color);
     color: var(--text-primary);
     padding: 4px 10px;
-    border-radius: 4px;
+    border-radius: 0px;
     font-size: 12px;
     font-weight: 400;
     cursor: pointer;
@@ -378,7 +377,7 @@ body {
     background-color: var(--primary-light);
     color: var(--primary);
     padding: 2px 8px;
-    border-radius: 4px;
+    border-radius: 0px;
     font-size: 11px;
     font-weight: 600;
 }
@@ -440,7 +439,7 @@ body {
 .vector-cell {
     background-color: #ffffff;
     border: 1px solid var(--border-color);
-    border-radius: 3px;
+    border-radius: 0px;
     padding: 4px 2px;
     text-align: center;
     font-family: monospace;
@@ -487,7 +486,7 @@ body {
     width: 100%;
     height: 4px;
     background-color: var(--gray-bg);
-    border-radius: 2px;
+    border-radius: 0px;
     overflow: hidden;
 }
 
@@ -509,7 +508,7 @@ body {
 
 ::-webkit-scrollbar-thumb {
     background: #e5e7eb;
-    border-radius: 4px;
+    border-radius: 0px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
@@ -528,4 +527,68 @@ body {
     font-size: 11px;
     color: var(--text-muted);
     margin-left: 8px;
+}
+
+/* Embeddings Card Styling */
+.embeddings-card {
+    margin-top: 24px;
+}
+
+.embeddings-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 18px;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.embeddings-toolbar .search-group {
+    flex: 1;
+    min-width: 200px;
+}
+
+.embeddings-table-container {
+    max-height: 350px;
+    overflow-y: auto;
+}
+
+.table-embeddings {
+    table-layout: fixed;
+}
+
+.table-embeddings td {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+.table-embeddings td:first-child {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* Embeddings Vector Cells preview */
+.vector-preview-container {
+    display: flex;
+    gap: 4px;
+    overflow-x: auto;
+    padding: 4px 0;
+    max-width: 100%;
+}
+
+.vector-preview-cell {
+    background-color: var(--gray-bg);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    padding: 2px 6px;
+    border-radius: 0px;
+    font-family: monospace;
+    font-size: 11px;
+    min-width: 58px;
+    text-align: right;
+}
+
+.right-panel-column .dashboard-card {
+    margin-bottom: 0;
 }

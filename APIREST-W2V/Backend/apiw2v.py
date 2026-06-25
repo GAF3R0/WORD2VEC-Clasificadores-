@@ -85,6 +85,17 @@ def get_vector():
     else:
         return jsonify({'error': 'Palabra no encontrada en el vocabulario'}), 404
 
+# Obtener todos los embeddings (vocabulario + vectores)
+@app.route('/embeddings/all', methods=['GET'])
+def get_all_embeddings():
+    embeddings = []
+    for word in model.wv.index_to_key:
+        embeddings.append({
+            'word': word,
+            'vector': model.wv[word].tolist()
+        })
+    return jsonify({'embeddings': embeddings})
+
 
 # Metodos POST
 
@@ -137,6 +148,21 @@ def train_corpus():
         'message': 'Modelo Word2Vec re-entrenado exitosamente con el corpus actualizado.',
         'vocabulary_size': len(model.wv.index_to_key)
     }), 200
+
+# Guardar los embeddings en el servidor
+@app.route('/embeddings/save', methods=['POST'])
+def save_embeddings():
+    try:
+        embeddings_txt_path = os.path.join(script_dir, 'embeddings.txt')
+        model.wv.save_word2vec_format(embeddings_txt_path)
+        return jsonify({
+            'message': 'Embeddings guardados exitosamente en el servidor.',
+            'path': embeddings_txt_path,
+            'filename': 'embeddings.txt'
+        }), 200
+    except Exception as e:
+        return jsonify({'error': f'Error al guardar embeddings: {str(e)}'}), 500
+
 
 # Metodos PUT
 

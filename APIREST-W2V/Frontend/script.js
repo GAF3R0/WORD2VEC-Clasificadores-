@@ -1,6 +1,7 @@
 const API_BASE_URL = 'http://localhost:5000';
 
 let allVocabWords = [];
+let allEmbeddings = [];
 let currentVector = null;
 
 // Cargar corpus y renderizar la tabla
@@ -195,6 +196,7 @@ async function autoTrainModel() {
         await countwords();
         await allwords();
         await loadcorpus();
+        await loadEmbeddings();
     } catch (error) {
         console.error("Error al auto-entrenar modelo: " + error.message);
     } finally {
@@ -429,6 +431,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadcorpus();
     countwords();
     allwords();
+    loadEmbeddings();
 
     // Formulario de corpus
     const phraseForm = document.getElementById('phrase-form');
@@ -503,4 +506,100 @@ document.addEventListener('DOMContentLoaded', () => {
     if (copyVectorBtn) {
         copyVectorBtn.addEventListener('click', copyVectorToClipboard);
     }
+
+    // Buscador de embeddings
+    const embeddingsSearch = document.getElementById('embeddings-search-input');
+    if (embeddingsSearch) {
+        embeddingsSearch.addEventListener('input', filterEmbeddings);
+    }
+
 });
+
+// ==========================================
+// NUEVAS FUNCIONES PARA EMBEDDINGS
+// ==========================================
+
+// Cargar todos los embeddings del backend
+async function loadEmbeddings() {
+    const url = `${API_BASE_URL}/embeddings/all`;
+    try {
+        const response = await fetch(url);
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error('Error HTTP: ' + response.status);
+        }
+        if (data.embeddings && Array.isArray(data.embeddings)) {
+            allEmbeddings = data.embeddings;
+            renderEmbeddingsTable(allEmbeddings);
+        }
+    } catch (error) {
+        console.error("Error al cargar embeddings: " + error.message);
+        const tableBody = document.getElementById('embeddings-table-body');
+        if (tableBody) {
+            tableBody.innerHTML = `<tr><td colspan="2" style="color: var(--danger); text-align: center;">Error al cargar embeddings.</td></tr>`;
+        }
+    }
+}
+
+// Renderizar tabla de embeddings
+function renderEmbeddingsTable(embeddings) {
+    const tableBody = document.getElementById('embeddings-table-body');
+    const countBadge = document.getElementById('embeddings-visible-count');
+    if (!tableBody) return;
+
+    tableBody.innerHTML = '';
+
+    if (embeddings.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="2" style="color: var(--text-muted); text-align: center; padding: 20px;">No hay embeddings disponibles.</td></tr>`;
+        if (countBadge) countBadge.textContent = `0 de ${allEmbeddings.length}`;
+        return;
+    }
+
+    embeddings.forEach(item => {
+        const tr = document.createElement('tr');
+        
+        // Crear vista previa del vector (100 dimensiones)
+        const vectorContainer = document.createElement('div');
+        vectorContainer.className = 'vector-preview-container';
+        
+        item.vector.forEach((val, idx) => {
+            const cell = document.createElement('span');
+            cell.className = 'vector-preview-cell';
+            cell.title = `Dimensión ${idx + 1}`;
+            cell.textContent = val.toFixed(4);
+            vectorContainer.appendChild(cell);
+        });
+
+        // Fila
+        tr.innerHTML = `
+            <td style="cursor: pointer; color: var(--primary);" title="Haga clic para consultar esta palabra">${escapeHtml(item.word)}</td>
+            <td></td>
+        `;
+
+        // Insertar el contenedor del vector en el segundo td
+        tr.cells[1].appendChild(vectorContainer);
+
+        // Event listener para que al hacer clic en la palabra, se consulte
+        tr.cells[0].addEventListener('click', () => {
+            selectWord(item.word);
+        });
+
+        tableBody.appendChild(tr);
+    });
+
+    if (countBadge) {
+        countBadge.textContent = `${embeddings.length} de ${allEmbeddings.length}`;
+    }
+}
+
+// Filtrar la tabla de embeddings
+function filterEmbeddings() {
+    const query = document.getElementById('embeddings-search-input').value.trim().toLowerCase();
+    if (!query) {
+        renderEmbeddingsTable(allEmbeddings);
+        return;
+    }
+
+    const filtered = allEmbeddings.filter(item => item.word.toLowerCase().includes(query));
+    renderEmbeddingsTable(filtered);
+}

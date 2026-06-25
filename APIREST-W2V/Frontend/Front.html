@@ -73,6 +73,34 @@
                 </div>
             </section>
 
+            <!-- Left Panel - Bottom: Embeddings Viewer & Exporter -->
+            <section class="dashboard-card embeddings-card">
+                <div class="card-header">
+                    <h2>Embeddings del Modelo</h2>
+                    <span id="embeddings-visible-count" class="term-badge">0 de 0</span>
+                </div>
+
+                <div class="embeddings-toolbar">
+                    <div class="input-group search-group">
+                        <input type="text" id="embeddings-search-input" placeholder="Buscar palabra en embeddings..." autocomplete="off">
+                    </div>
+                </div>
+
+                <div class="table-container embeddings-table-container">
+                    <table class="table-corpus table-embeddings">
+                        <thead>
+                            <tr>
+                                <th style="width: 25%;">Palabra</th>
+                                <th style="width: 75%;">Vector (Vista Previa de 100 Dimensiones)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="embeddings-table-body">
+                            <!-- Se cargará dinámicamente con JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
             <!-- Right Panel: Word analysis (vector and similar words) -->
             <div class="right-panel-column">
 
