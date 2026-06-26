@@ -3,6 +3,8 @@ const API_BASE_URL = 'http://localhost:5000';
 let allVocabWords = [];
 let allEmbeddings = [];
 let currentVector = null;
+let selectedCSVFile = null;
+let currentModelConfig = null;
 
 // Cargar corpus y renderizar la tabla
 async function loadcorpus() {
@@ -432,6 +434,9 @@ document.addEventListener('DOMContentLoaded', () => {
     countwords();
     allwords();
     loadEmbeddings();
+    initCSVUpload();
+    loadModelConfig();
+    initModelConfigPanel();
 
     // Formulario de corpus
     const phraseForm = document.getElementById('phrase-form');
@@ -602,4 +607,291 @@ function filterEmbeddings() {
 
     const filtered = allEmbeddings.filter(item => item.word.toLowerCase().includes(query));
     renderEmbeddingsTable(filtered);
+}
+
+// ==========================================
+// NUEVAS FUNCIONES PARA CARGA DE CSV
+// ==========================================
+
+function initCSVUpload() {
+    const dropzone = document.getElementById('csv-dropzone');
+    const fileInput = document.getElementById('csv-file-input');
+    const cancelBtn = document.getElementById('btn-cancel-csv');
+    const trainBtn = document.getElementById('btn-train-csv');
+
+    if (!dropzone || !fileInput || !cancelBtn || !trainBtn) return;
+
+    // Abrir selector al hacer clic en dropzone
+    dropzone.addEventListener('click', () => fileInput.click());
+
+    // Eventos drag & drop
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropzone.addEventListener(eventName, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dropzone.classList.add('dragover');
+        }, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropzone.addEventListener(eventName, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dropzone.classList.remove('dragover');
+        }, false);
+    });
+
+    dropzone.addEventListener('drop', (e) => {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        if (files.length > 0) {
+            handleCSVFile(files[0]);
+        }
+    });
+
+    fileInput.addEventListener('change', () => {
+        if (fileInput.files.length > 0) {
+            handleCSVFile(fileInput.files[0]);
+        }
+    });
+
+    cancelBtn.addEventListener('click', resetCSVUpload);
+    trainBtn.addEventListener('click', trainWithCSV);
+}
+
+// Procesar archivo seleccionado
+async function handleCSVFile(file) {
+    if (!file.name.toLowerCase().endsWith('.csv')) {
+        alert('Por favor, seleccione un archivo con formato .csv');
+        return;
+    }
+
+    selectedCSVFile = file;
+
+    // Cambiar mensaje a cargando
+    const messageSpan = document.querySelector('#csv-dropzone .dropzone-message');
+    const originalMessage = messageSpan.textContent;
+    messageSpan.textContent = 'Analizando archivo CSV...';
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/corpus/analyze_csv`, {
+            method: 'POST',
+            body: formData
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data.error || 'Error al analizar el CSV');
+        }
+
+        // Mostrar opciones y ocultar dropzone
+        document.getElementById('csv-dropzone').classList.add('hidden');
+        document.getElementById('csv-options-container').classList.remove('hidden');
+
+        // Detalles del archivo
+        document.getElementById('selected-file-name').textContent = data.filename;
+        document.getElementById('selected-file-size').textContent = (file.size / 1024).toFixed(1) + ' KB';
+        document.getElementById('selected-file-rows').textContent = data.row_count + (data.row_count === 1 ? ' fila' : ' filas');
+
+        // Habilitar botón de entrenamiento
+        document.getElementById('btn-train-csv').disabled = false;
+
+        // Tabla de vista previa
+        const thead = document.getElementById('csv-preview-thead');
+        const tbody = document.getElementById('csv-preview-tbody');
+        thead.innerHTML = '';
+        tbody.innerHTML = '';
+
+        if (data.preview && data.preview.length > 0) {
+            // Headers
+            const headerRow = document.createElement('tr');
+            data.columns.forEach(col => {
+                const th = document.createElement('th');
+                th.textContent = col;
+                headerRow.appendChild(th);
+            });
+            thead.appendChild(headerRow);
+
+            // Filas
+            data.preview.forEach(row => {
+                const tr = document.createElement('tr');
+                data.columns.forEach(col => {
+                    const td = document.createElement('td');
+                    td.textContent = row[col] !== undefined ? row[col] : '';
+                    td.title = row[col] !== undefined ? row[col] : '';
+                    tr.appendChild(td);
+                });
+                tbody.appendChild(tr);
+            });
+        }
+    } catch (error) {
+        alert('Error: ' + error.message);
+        resetCSVUpload();
+    } finally {
+        messageSpan.textContent = originalMessage;
+    }
+}
+
+// Cancelar y limpiar formulario CSV
+function resetCSVUpload() {
+    selectedCSVFile = null;
+    document.getElementById('csv-file-input').value = '';
+    document.getElementById('csv-dropzone').classList.remove('hidden');
+    document.getElementById('csv-options-container').classList.add('hidden');
+    document.getElementById('csv-preview-thead').innerHTML = '';
+    document.getElementById('csv-preview-tbody').innerHTML = '';
+    document.getElementById('btn-train-csv').disabled = true;
+}
+
+// Enviar archivo y columna seleccionada para entrenar modelo
+async function trainWithCSV() {
+    if (!selectedCSVFile) return;
+
+    const trainBtn = document.getElementById('btn-train-csv');
+    const cancelBtn = document.getElementById('btn-cancel-csv');
+    const originalBtnText = trainBtn.textContent;
+
+    trainBtn.disabled = true;
+    cancelBtn.disabled = true;
+    trainBtn.textContent = 'Entrenando modelo...';
+
+    const formData = new FormData();
+    formData.append('file', selectedCSVFile);
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/corpus/train_csv`, {
+            method: 'POST',
+            body: formData
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data.error || 'Error en el entrenamiento');
+        }
+
+        alert('¡Entrenamiento Completado exitosamente!\n' + data.message + '\nVocabulario: ' + data.vocabulary_size + ' palabras.');
+        resetCSVUpload();
+
+        // Refrescar todos los datos en el dashboard
+        await countwords();
+        await allwords();
+        await loadcorpus();
+        await loadEmbeddings();
+
+    } catch (error) {
+        alert('Error al entrenar con CSV: ' + error.message);
+    } finally {
+        trainBtn.disabled = false;
+        cancelBtn.disabled = false;
+        trainBtn.textContent = originalBtnText;
+    }
+}
+
+// ==========================================
+// NUEVAS FUNCIONES PARA CONFIGURACIÓN
+// ==========================================
+
+// Cargar configuración de entrenamiento de Word2Vec desde el backend
+async function loadModelConfig() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/config/model`);
+        const data = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(data.error || 'Error al obtener la configuración.');
+        }
+        
+        currentModelConfig = data;
+        populateConfigForm(currentModelConfig);
+    } catch (error) {
+        console.error("Error al cargar la configuración: " + error.message);
+    }
+}
+
+// Llenar el formulario con los parámetros cargados
+function populateConfigForm(config) {
+    if (!config) return;
+    
+    const vectorSize = config.vector_size || 100;
+    document.getElementById('config-vector-size').value = vectorSize;
+    document.getElementById('config-window').value = config.window || 10;
+    document.getElementById('config-min-count').value = config.min_count || 1;
+    document.getElementById('config-sg').value = config.sg !== undefined ? config.sg : 1;
+    
+    // Actualizar dinámicamente los textos de dimensiones en la UI
+    const embeddingsHeader = document.getElementById('lbl-embeddings-dimensions-header');
+    if (embeddingsHeader) {
+        embeddingsHeader.textContent = `Vector (Vista Previa de ${vectorSize} Dimensiones)`;
+    }
+    const resultHeader = document.getElementById('lbl-vector-dimensions-header');
+    if (resultHeader) {
+        resultHeader.textContent = `Vector de Palabra (${vectorSize} dimensiones)`;
+    }
+}
+
+// Inicializar panel de configuración
+function initModelConfigPanel() {
+    const toggleBtn = document.getElementById('btn-toggle-config');
+    const configCard = document.getElementById('config-card');
+    const configForm = document.getElementById('config-form');
+    const resetBtn = document.getElementById('btn-reset-config');
+    
+    if (!toggleBtn || !configCard || !configForm || !resetBtn) return;
+    
+    // Toggle visibilidad
+    toggleBtn.addEventListener('click', () => {
+        configCard.classList.toggle('hidden');
+        if (!configCard.classList.contains('hidden') && currentModelConfig) {
+            populateConfigForm(currentModelConfig);
+        }
+    });
+    
+    // Resetear formulario
+    resetBtn.addEventListener('click', () => {
+        if (currentModelConfig) {
+            populateConfigForm(currentModelConfig);
+        } else {
+            loadModelConfig();
+        }
+    });
+    
+    // Guardar cambios
+    configForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const vector_size = parseInt(document.getElementById('config-vector-size').value);
+        const window = parseInt(document.getElementById('config-window').value);
+        const min_count = parseInt(document.getElementById('config-min-count').value);
+        const sg = parseInt(document.getElementById('config-sg').value);
+        
+        const saveBtn = document.getElementById('btn-save-config');
+        const originalText = saveBtn.textContent;
+        saveBtn.disabled = true;
+        saveBtn.textContent = 'Guardando...';
+        
+        try {
+            const response = await fetch(`${API_BASE_URL}/config/model`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ vector_size, window, min_count, sg })
+            });
+            
+            const data = await response.json();
+            if (!response.ok) {
+                throw new Error(data.error || 'Error al guardar configuración');
+            }
+            
+            currentModelConfig = data.config;
+            alert(data.message);
+            configCard.classList.add('hidden'); // Ocultar al guardar con éxito
+        } catch (error) {
+            alert('Error: ' + error.message);
+        } finally {
+            saveBtn.disabled = false;
+            saveBtn.textContent = originalText;
+        }
+    });
 }

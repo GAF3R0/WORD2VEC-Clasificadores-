@@ -20,6 +20,9 @@
                 </div>
             </div>
             <div class="header-stats">
+                <button id="btn-toggle-config" class="btn btn-secondary btn-sm" style="font-weight: 500;">
+                    Configurar Modelo
+                </button>
                 <div class="stat-badge" id="vocab-stat-badge">
                     <span class="stat-label">Vocabulario:</span>
                     <span class="stat-value" id="vocab-count-value"></span>
@@ -31,75 +34,160 @@
             </div>
         </header>
 
+        <!-- Collapsible Configuration Card (Hidden by default) -->
+        <section id="config-card" class="dashboard-card config-card hidden" style="margin-bottom: 24px;">
+            <div class="card-header">
+                <h2>Configuración de Parámetros de Word2Vec</h2>
+            </div>
+            <form id="config-form" onsubmit="event.preventDefault();" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 20px;">
+                <div class="input-label-wrapper" style="display: flex; flex-direction: column; gap: 6px;">
+                    <label for="config-vector-size" style="font-size: 12px; font-weight: 600; color: var(--text-secondary);">Dimensiones del Vector (vector_size):</label>
+                    <div class="input-group">
+                        <input type="number" id="config-vector-size" min="10" max="500" required autocomplete="off">
+                    </div>
+                </div>
+                <div class="input-label-wrapper" style="display: flex; flex-direction: column; gap: 6px;">
+                    <label for="config-window" style="font-size: 12px; font-weight: 600; color: var(--text-secondary);">Tamaño de Ventana (window):</label>
+                    <div class="input-group">
+                        <input type="number" id="config-window" min="1" max="20" required autocomplete="off">
+                    </div>
+                </div>
+                <div class="input-label-wrapper" style="display: flex; flex-direction: column; gap: 6px;">
+                    <label for="config-min-count" style="font-size: 12px; font-weight: 600; color: var(--text-secondary);">Frecuencia Mínima (min_count):</label>
+                    <div class="input-group">
+                        <input type="number" id="config-min-count" min="1" max="100" required autocomplete="off">
+                    </div>
+                </div>
+                <div class="input-label-wrapper" style="display: flex; flex-direction: column; gap: 6px;">
+                    <label for="config-sg" style="font-size: 12px; font-weight: 600; color: var(--text-secondary);">Algoritmo de Entrenamiento (sg):</label>
+                    <select id="config-sg" class="csv-select" style="padding: 10px 14px; font-size: 14px; border: 1px solid var(--border-color); background-color: var(--gray-bg); outline: none; border-radius: var(--border-radius); height: 43px;">
+                        <option value="0">CBOW (0)</option>
+                        <option value="1">Skip-gram (1)</option>
+                    </select>
+                </div>
+                <div style="grid-column: 1 / -1; display: flex; gap: 10px; justify-content: flex-end; margin-top: 10px;">
+                    <button type="button" id="btn-reset-config" class="btn btn-secondary">Restablecer</button>
+                    <button type="submit" id="btn-save-config" class="btn btn-primary">Guardar Ajustes</button>
+                </div>
+            </form>
+        </section>
+
         <!-- Main Dashboard Layout -->
         <main class="dashboard-grid">
 
-            <!-- Left Panel: Corpus Management -->
-            <section class="dashboard-card corpus-card">
-                <div class="card-header">
-                    <h2>Frases en el Corpus</h2>
-                </div>
-
-                <!-- Form to Add/Edit phrase -->
-                <div class="phrase-form-container">
-                    <form id="phrase-form" class="phrase-form" onsubmit="event.preventDefault();">
-                        <input type="hidden" id="phrase-index-input">
-                        <div class="input-group">
-                            <input type="text" id="phrase-input"
-                                placeholder="Escriba una frase para agregar al corpus..." required autocomplete="off">
-                            <button type="submit" id="btn-save-phrase" class="btn btn-success">
-                                <span id="save-btn-text">Agregar</span>
-                            </button>
-                            <button type="button" id="btn-cancel-edit" class="btn btn-secondary hidden">
-                                Cancelar
-                            </button>
-                        </div>
-                    </form>
-                </div>
-
-                <div class="table-container">
-                    <table class="table-corpus">
-                        <thead>
-                            <tr>
-                                <th style="width: 10%;">Índice</th>
-                                <th style="width: 70%;">Frase</th>
-                                <th style="width: 20%; text-align: right;">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody id="corpus-table-body">
-
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-
-            <!-- Left Panel - Bottom: Embeddings Viewer & Exporter -->
-            <section class="dashboard-card embeddings-card">
-                <div class="card-header">
-                    <h2>Embeddings del Modelo</h2>
-                    <span id="embeddings-visible-count" class="term-badge">0 de 0</span>
-                </div>
-
-                <div class="embeddings-toolbar">
-                    <div class="input-group search-group">
-                        <input type="text" id="embeddings-search-input" placeholder="Buscar palabra en embeddings..." autocomplete="off">
+            <div class="left-panel-column">
+                <!-- Left Panel: CSV Upload -->
+                <section class="dashboard-card csv-card">
+                    <div class="card-header">
+                        <h2>Entrenar Modelo con CSV</h2>
                     </div>
-                </div>
+                    <div class="csv-upload-container">
+                        <div class="csv-dropzone" id="csv-dropzone">
+                            <input type="file" id="csv-file-input" accept=".csv" class="hidden">
+                            <div class="dropzone-text">
+                                <span class="dropzone-message" style="display: block; font-size: 13px;">Arrastre su archivo CSV aquí o haga clic para seleccionar</span>
+                            </div>
+                        </div>
+                        
+                        <div id="csv-options-container" class="csv-options hidden">
+                            <div class="file-info-badge" style="display: flex; gap: 8px; flex-wrap: wrap; background-color: var(--gray-bg); padding: 8px 12px; border: 1px solid var(--border-color); margin-top: 12px; font-size: 12px;">
+                                <span class="file-name" id="selected-file-name" style="font-weight: 600; color: var(--primary);">archivo.csv</span>
+                                <span class="file-size" id="selected-file-size" style="color: var(--text-secondary);">0 KB</span>
+                                <span class="file-rows" id="selected-file-rows" style="color: var(--success); font-weight: 600;">0 filas</span>
+                            </div>
 
-                <div class="table-container embeddings-table-container">
-                    <table class="table-corpus table-embeddings">
-                        <thead>
-                            <tr>
-                                <th style="width: 25%;">Palabra</th>
-                                <th style="width: 75%;">Vector (Vista Previa de 100 Dimensiones)</th>
-                            </tr>
-                        </thead>
-                        <tbody id="embeddings-table-body">
-                            <!-- Se cargará dinámicamente con JavaScript -->
-                        </tbody>
-                    </table>
-                </div>
-            </section>
+
+                            <div class="preview-section" style="margin-top: 15px;">
+                                <h4 style="font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px;">Vista previa de datos (5 filas):</h4>
+                                <div class="table-container csv-preview-table-container" style="max-height: 150px; border: 1px solid var(--border-color); overflow-x: auto;">
+                                    <table class="table-corpus table-csv-preview" style="font-size: 12px; width: 100%; border-collapse: collapse;">
+                                        <thead id="csv-preview-thead">
+                                            <!-- Dinámico -->
+                                        </thead>
+                                        <tbody id="csv-preview-tbody">
+                                            <!-- Dinámico -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <div class="action-buttons-wrapper" style="margin-top: 20px; display: flex; gap: 10px; justify-content: flex-end;">
+                                <button type="button" id="btn-cancel-csv" class="btn btn-secondary">Cancelar</button>
+                                <button type="button" id="btn-train-csv" class="btn btn-primary" disabled>
+                                    Entrenar con CSV
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Left Panel: Corpus Management -->
+                <section class="dashboard-card corpus-card">
+                    <div class="card-header">
+                        <h2>Frases en el Corpus</h2>
+                    </div>
+
+                    <!-- Form to Add/Edit phrase -->
+                    <div class="phrase-form-container">
+                        <form id="phrase-form" class="phrase-form" onsubmit="event.preventDefault();">
+                            <input type="hidden" id="phrase-index-input">
+                            <div class="input-group">
+                                <input type="text" id="phrase-input"
+                                    placeholder="Escriba una frase para agregar al corpus..." required autocomplete="off">
+                                <button type="submit" id="btn-save-phrase" class="btn btn-success">
+                                    <span id="save-btn-text">Agregar</span>
+                                </button>
+                                <button type="button" id="btn-cancel-edit" class="btn btn-secondary hidden">
+                                    Cancelar
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="table-container">
+                        <table class="table-corpus">
+                            <thead>
+                                <tr>
+                                    <th style="width: 10%;">Índice</th>
+                                    <th style="width: 70%;">Frase</th>
+                                    <th style="width: 20%; text-align: right;">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="corpus-table-body">
+
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Left Panel - Bottom: Embeddings Viewer & Exporter -->
+                <section class="dashboard-card embeddings-card">
+                    <div class="card-header">
+                        <h2>Embeddings del Modelo</h2>
+                        <span id="embeddings-visible-count" class="term-badge">0 de 0</span>
+                    </div>
+
+                    <div class="embeddings-toolbar">
+                        <div class="input-group search-group">
+                            <input type="text" id="embeddings-search-input" placeholder="Buscar palabra en embeddings..." autocomplete="off">
+                        </div>
+                    </div>
+
+                    <div class="table-container embeddings-table-container">
+                        <table class="table-corpus table-embeddings">
+                            <thead>
+                                <tr>
+                                    <th style="width: 25%;">Palabra</th>
+                                    <th style="width: 75%;" id="lbl-embeddings-dimensions-header">Vector (Vista Previa de 100 Dimensiones)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="embeddings-table-body">
+                                <!-- Se cargará dinámicamente con JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
 
             <!-- Right Panel: Word analysis (vector and similar words) -->
             <div class="right-panel-column">
@@ -158,7 +246,7 @@
                     <!-- Vector display (hidden by default) -->
                     <div id="vector-result-container" class="vector-result-container hidden">
                         <div class="result-subheader">
-                            <h3>Vector de Palabra (100 dimensiones)</h3>
+                            <h3 id="lbl-vector-dimensions-header">Vector de Palabra (100 dimensiones)</h3>
                             <button id="btn-copy-vector" class="btn btn-secondary btn-sm"
                                 title="Copiar Vector">Copiar</button>
                         </div>

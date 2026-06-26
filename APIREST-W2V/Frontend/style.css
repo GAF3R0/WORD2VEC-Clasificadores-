@@ -549,12 +549,12 @@ body {
 }
 
 .embeddings-table-container {
-    height: 320px;
+    height: 450px;
     overflow-y: auto;
 }
 
 .corpus-card .table-container {
-    height: 320px;
+    height: 450px;
 }
 
 .table-embeddings {
@@ -595,4 +595,89 @@ body {
 
 .right-panel-column .dashboard-card {
     margin-bottom: 0;
+}
+
+/* Columns Layout grouping */
+.left-panel-column {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* CSV Dropzone Style */
+.csv-dropzone {
+    border: 1px dashed var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 24px 20px;
+    text-align: center;
+    background-color: var(--gray-bg);
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.csv-dropzone:hover, .csv-dropzone.dragover {
+    border-color: var(--primary);
+    background-color: #ffffff;
+}
+
+/* Config Card Styling */
+.config-card {
+    border: 1px solid var(--border-color);
+    background-color: var(--card-bg);
+    animation: fadeIn 0.2s ease-out;
+}
+
+.config-card input[type="number"] {
+    width: 100%;
+    padding: 10px 14px;
+    font-size: 14px;
+    border: 1px solid var(--border-color);
+    background-color: var(--gray-bg);
+    outline: none;
+    border-radius: var(--border-radius);
+    transition: var(--transition);
+}
+
+.config-card input[type="number"]:focus {
+    border-color: var(--text-primary);
+    background-color: #ffffff;
+}
+
+/* CSV Options Container */
+.csv-options {
+    animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.csv-select {
+    transition: var(--transition);
+}
+
+.csv-select:focus {
+    border-color: var(--text-primary) !important;
+    background-color: #ffffff !important;
+}
+
+.table-csv-preview th {
+    padding: 8px 10px;
+    font-size: 11px;
+    background-color: var(--gray-bg);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.table-csv-preview td {
+    padding: 8px 10px;
+    font-size: 11px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    max-width: 150px;
 }

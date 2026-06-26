@@ -1,6 +1,8 @@
 import flask
 import os
 import json
+import io
+import pandas as pd
 from flask import request, jsonify
 from gensim.models import Word2Vec
 from gensim.utils import simple_preprocess 
@@ -27,6 +29,25 @@ if os.path.exists(corpus_json_path):
         corpus = json.load(f)
 else:
     corpus = []
+
+# Cargar la configuración del modelo si existe, de lo contrario usar valores por defecto
+config_path = os.path.join(script_dir, 'config.json')
+default_config = {
+    'vector_size': 100,
+    'window': 10,
+    'min_count': 1,
+    'workers': 1,
+    'sg': 1
+}
+
+if os.path.exists(config_path):
+    with open(config_path, 'r', encoding='utf-8') as f:
+        try:
+            model_config = json.load(f)
+        except Exception:
+            model_config = default_config.copy()
+else:
+    model_config = default_config.copy()
 
 # Creación de la App Flask
 app = flask.Flask(__name__)
@@ -135,11 +156,11 @@ def train_corpus():
     # Re-entrenar el modelo Word2Vec
     model = Word2Vec(
         sentences=tokenized,
-        vector_size=100,
-        window=10,
-        min_count=1,
-        workers=1,
-        sg=1
+        vector_size=model_config.get('vector_size', 100),
+        window=model_config.get('window', 10),
+        min_count=model_config.get('min_count', 1),
+        workers=model_config.get('workers', 1),
+        sg=model_config.get('sg', 1)
     )
     
     model.save(model_path)
@@ -148,6 +169,113 @@ def train_corpus():
         'message': 'Modelo Word2Vec re-entrenado exitosamente con el corpus actualizado.',
         'vocabulary_size': len(model.wv.index_to_key)
     }), 200
+
+# Analizar un archivo CSV para obtener sus columnas y una vista previa
+@app.route('/corpus/analyze_csv', methods=['POST'])
+def analyze_csv():
+    if 'file' not in request.files:
+        return jsonify({'error': 'No se proporcionó ningún archivo CSV en la solicitud.'}), 400
+    
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({'error': 'Nombre de archivo vacío.'}), 400
+    
+    try:
+        file_bytes = file.read()
+        
+        # Intentar leer CSV con detección automática de separador
+        try:
+            df = pd.read_csv(io.BytesIO(file_bytes), sep=None, engine='python', encoding='utf-8')
+        except UnicodeDecodeError:
+            df = pd.read_csv(io.BytesIO(file_bytes), sep=None, engine='python', encoding='latin-1')
+        
+        columns = list(df.columns)
+        row_count = len(df)
+        
+        # Rellenar NaN con cadena vacía para evitar problemas de JSON
+        preview_df = df.head(5).fillna('')
+        preview = preview_df.to_dict(orient='records')
+        
+        return jsonify({
+            'filename': file.filename,
+            'columns': columns,
+            'row_count': row_count,
+            'preview': preview
+        }), 200
+    except Exception as e:
+        return jsonify({'error': f'Error al analizar el archivo CSV: {str(e)}'}), 400
+
+# Entrenar el modelo con los datos del CSV (primera columna por defecto)
+@app.route('/corpus/train_csv', methods=['POST'])
+def train_csv():
+    global model, corpus
+    
+    if 'file' not in request.files:
+        return jsonify({'error': 'No se proporcionó ningún archivo CSV.'}), 400
+        
+    file = request.files['file']
+    column = request.form.get('column', '').strip()
+        
+    try:
+        file_bytes = file.read()
+        
+        try:
+            df = pd.read_csv(io.BytesIO(file_bytes), sep=None, engine='python', encoding='utf-8')
+        except UnicodeDecodeError:
+            df = pd.read_csv(io.BytesIO(file_bytes), sep=None, engine='python', encoding='latin-1')
+            
+        # Si no se especifica columna, buscar la mejor columna que contenga texto
+        if not column:
+            if df.columns.empty:
+                return jsonify({'error': 'El archivo CSV no contiene columnas válidas.'}), 400
+            
+            best_column = df.columns[0]
+            max_tokens = 0
+            for col in df.columns:
+                sample = df[col].dropna().head(10).astype(str).tolist()
+                tokens_count = sum(len(preprocess_text(s)) for s in sample)
+                if tokens_count > max_tokens:
+                    max_tokens = tokens_count
+                    best_column = col
+            column = best_column
+            
+        if column not in df.columns:
+            return jsonify({'error': f'La columna "{column}" no existe en el archivo CSV.'}), 400
+            
+        # Extraer filas, eliminar nulos y cadenas vacías
+        sentences = df[column].dropna().astype(str).str.strip().tolist()
+        sentences = [s for s in sentences if s != '']
+        
+        if not sentences:
+            return jsonify({'error': f'La columna "{column}" no contiene datos de texto válidos.'}), 400
+            
+        # Reemplazar el corpus global y guardarlo
+        corpus = sentences
+        with open(corpus_json_path, 'w', encoding='utf-8') as f:
+            json.dump(corpus, f, ensure_ascii=False, indent=4)
+            
+        # Preprocesar e iniciar entrenamiento
+        tokenized = [preprocess_text(sentence) for sentence in corpus]
+        
+        model = Word2Vec(
+            sentences=tokenized,
+            vector_size=model_config.get('vector_size', 100),
+            window=model_config.get('window', 10),
+            min_count=model_config.get('min_count', 1),
+            workers=model_config.get('workers', 1),
+            sg=model_config.get('sg', 1)
+        )
+        
+        model.save(model_path)
+        
+        return jsonify({
+            'message': 'Modelo Word2Vec entrenado exitosamente con los datos del CSV.',
+            'vocabulary_size': len(model.wv.index_to_key),
+            'row_count': len(corpus)
+        }), 200
+        
+    except Exception as e:
+        return jsonify({'error': f'Error durante el entrenamiento con CSV: {str(e)}'}), 500
 
 # Guardar los embeddings en el servidor
 @app.route('/embeddings/save', methods=['POST'])
@@ -162,6 +290,42 @@ def save_embeddings():
         }), 200
     except Exception as e:
         return jsonify({'error': f'Error al guardar embeddings: {str(e)}'}), 500
+
+
+# Obtener o actualizar la configuración de entrenamiento del modelo
+@app.route('/config/model', methods=['GET', 'POST'])
+def handle_config():
+    global model_config
+    if request.method == 'POST':
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'No se recibieron datos de configuración.'}), 400
+        
+        try:
+            vector_size = int(data.get('vector_size', model_config['vector_size']))
+            window = int(data.get('window', model_config['window']))
+            min_count = int(data.get('min_count', model_config['min_count']))
+            sg = int(data.get('sg', model_config['sg']))
+            
+            if sg not in [0, 1]:
+                return jsonify({'error': 'El parámetro de algoritmo (sg) debe ser 0 o 1.'}), 400
+                
+            model_config['vector_size'] = vector_size
+            model_config['window'] = window
+            model_config['min_count'] = min_count
+            model_config['sg'] = sg
+            
+            with open(config_path, 'w', encoding='utf-8') as f:
+                json.dump(model_config, f, indent=4)
+                
+            return jsonify({
+                'message': 'Configuración del modelo guardada con éxito.',
+                'config': model_config
+            }), 200
+        except ValueError:
+            return jsonify({'error': 'Los parámetros deben ser valores numéricos enteros.'}), 400
+            
+    return jsonify(model_config), 200
 
 
 # Metodos PUT
